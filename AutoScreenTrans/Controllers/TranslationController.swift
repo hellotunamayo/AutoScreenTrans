@@ -5,6 +5,9 @@
 //  Created by Minyoung Yoo on 9/25/26.
 //
 
+// This class is not used because we decided to use Qwen 2.5(MLX) for translation.
+// However, the code is retained for future extensions.
+
 import Foundation
 import Translation
 

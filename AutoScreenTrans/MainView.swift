@@ -15,10 +15,12 @@ struct MainView: View {
     @State private var selectedLanguage: String = "en-US"
     @State private var capturedText: String = ""
     @State private var translatedText: String = ""
+    @State private var statusMessage: String = ""
+    
+    @StateObject var translator: MLXTranslator = .shared
     
     let windowListController: WindowCaptureController = .init()
     let visionController: VisionController = .init()
-    let translationController: TranslationController = .init()
     
     var body: some View {
         VStack {
@@ -43,6 +45,8 @@ struct MainView: View {
             .cornerRadius(20)
             
             VStack {
+                Text(statusMessage).font(Font.caption)
+                
                 Picker(selection: $selectedWindow, label: Text("Window List")) {
                     Text("Select Window").tag(CGWindowID(0))
                     ForEach(windowInfoList) { window in
@@ -71,9 +75,25 @@ struct MainView: View {
                             capturedText.append(result.text)
                         }
                         
-                        let fromLanguageIdentifier = getLanguageCode(from: selectedLanguage)
+                        print("Captured Text: \(capturedText)")
                         
-                        translatedText = try await translationController.translateText(text: capturedText, from: Locale.Language(identifier: fromLanguageIdentifier))
+                        do {
+                            statusMessage = "Preparing model..."
+                            await translator.prepareModel()
+                            
+                            statusMessage = "Starting inference..."
+                            translatedText = try await translator.translate(
+                                sourceLanguage: selectedLanguage,
+                                targetLanguage: "Korean",
+                                givenText: capturedText,
+                                glossary: [:]
+                            )
+                            
+                            statusMessage = "Job finished."
+                        } catch {
+                            statusMessage = error.localizedDescription
+                            print("Error: \(error)")
+                        }
                         
                     }
                 } label: {
@@ -90,6 +110,7 @@ struct MainView: View {
                         .underline(true)
                 }
                 .buttonStyle(.borderless)
+
             }
             .padding()
 
@@ -98,6 +119,9 @@ struct MainView: View {
             Task {
                 try await self.refreshWindowList()
             }
+        }
+        .onReceive(translator.$modelStatus) { message in
+            statusMessage = message
         }
         .padding()
         

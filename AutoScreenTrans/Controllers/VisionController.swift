@@ -74,7 +74,7 @@ final class VisionController {
         
         let ciImage = CIImage(cgImage: cgImage)
         
-        // 1. 해상도 3배 확대 (Lanczos Scale Transform 또는 Nearest Neighbor)
+        // 1. Upsacle 3x (Lanczos Scale Transform 또는 Nearest Neighbor)
         let scaleTransform = CIFilter(name: "CILanczosScaleTransform")
         scaleTransform?.setValue(ciImage, forKey: kCIInputImageKey)
         scaleTransform?.setValue(3.0, forKey: kCIInputScaleKey) // 3배 확대
@@ -82,10 +82,10 @@ final class VisionController {
         
         guard let scaledImage = scaleTransform?.outputImage else { return nil }
         
-        // 2. 흑백 단색화 및 대비 증가 (글씨 배경 분리)
+        // 2. Monotone + Increase contrast
         let controlsFilter = CIFilter(name: "CIColorControls")
         controlsFilter?.setValue(scaledImage, forKey: kCIInputImageKey)
-        controlsFilter?.setValue(1.5, forKey: kCIInputContrastKey) // 대비 1.5배 상승
+        controlsFilter?.setValue(1.5, forKey: kCIInputContrastKey)
         
         guard let outputImage = controlsFilter?.outputImage else { return nil }
         

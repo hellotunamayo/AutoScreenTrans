@@ -8,19 +8,27 @@
 import SwiftUI
 import NaturalLanguage
 
+enum InferenceType {
+    case macOS
+    case LLMModel
+}
+
 struct MainView: View {
     @State private var selectedWindow: CGWindowID = 0
     @State private var windowInfoList: [WindowInfo] = []
     @State private var capturedWindowImage: NSImage = .init()
-    @State private var selectedLanguage: String = "en-US"
+    @State private var sourceLanguage: Locale = Locale(components: .init(languageCode: .english))
     @State private var capturedText: String = ""
     @State private var translatedText: String = ""
+    @State private var modelTranslatedText: String = ""
     @State private var statusMessage: String = ""
     
     @StateObject var translator: MLXTranslator = .shared
+    let translationController: TranslationController = .init()
     
     let windowListController: WindowCaptureController = .init()
     let visionController: VisionController = .init()
+    let inferenceType: InferenceType = .LLMModel
     
     var body: some View {
         VStack {
@@ -35,14 +43,27 @@ struct MainView: View {
             .cornerRadius(20)
             .padding(.bottom, 10)
             
-            ScrollView {
-                Text(translatedText)
-                    .font(Font.title)
-                    .padding(20)
-                    .frame(maxWidth: .infinity)
+            switch inferenceType {
+                case .macOS:
+                    ScrollView {
+                        Text(translatedText)
+                            .font(Font.title)
+                            .padding(20)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(20)
+                    
+                case .LLMModel:
+                    ScrollView {
+                        Text(modelTranslatedText)
+                            .font(Font.title)
+                            .padding(20)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(20)
             }
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(20)
             
             VStack {
                 Text(statusMessage).font(Font.caption)
@@ -55,11 +76,11 @@ struct MainView: View {
                     }
                 }
                 
-                Picker(selection: $selectedLanguage, label: Text("Target Language")) {
+                Picker(selection: $sourceLanguage, label: Text("Source Language")) {
                     Text("Select Language").tag("")
-                    Text("English").tag("en-US")
-                    Text("한국어").tag("ko-KR")
-                    Text("日本語").tag("ja-JP")
+                    Text("English").tag(Locale(components: .init(languageCode: .english)))
+                    Text("한국어").tag(Locale(components: .init(languageCode: .korean)))
+                    Text("日本語").tag(Locale(components: .init(languageCode: .japanese)))
                 }
                 
                 Divider()
@@ -69,7 +90,7 @@ struct MainView: View {
                     Task {
                         
                         let capturedImage = try await windowListController.captureWindow(windowID: selectedWindow)
-                        let results = try await visionController.performOCR(on: capturedImage, languages: [selectedLanguage])
+                        let results = try await visionController.performOCR(on: capturedImage, languages: [sourceLanguage])
                         capturedText = ""
                         for result in results {
                             capturedText.append(result.text)
@@ -77,14 +98,19 @@ struct MainView: View {
                         
                         print("Captured Text: \(capturedText)")
                         
+                        let target = Locale(components: .init(languageCode: .korean))
+                        translatedText = try await translationController.translateText(text: capturedText,
+                                                            from: sourceLanguage,
+                                                            to: target)
+                        
                         do {
                             statusMessage = "Preparing model..."
                             await translator.prepareModel()
                             
                             statusMessage = "Starting inference..."
-                            translatedText = try await translator.translate(
-                                sourceLanguage: selectedLanguage,
-                                targetLanguage: "Korean",
+                            modelTranslatedText = try await translator.translate(
+                                sourceLanguage: sourceLanguage.description,
+                                targetLanguage: target.description,
                                 givenText: capturedText,
                                 glossary: [:]
                             )

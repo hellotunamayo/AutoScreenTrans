@@ -18,14 +18,14 @@ enum TranslationError: Error {
 final class TranslationController {
     @available(macOS 15.0, *)
     func translateText(text: String,
-                       from sourceLanguage: Locale.Language = Locale.Language(identifier: "ja"),
-                       to targetLanguage: Locale.Language = Locale.Language(identifier: "ko")) async throws -> String {
+                       from sourceLanguage: Locale,
+                       to targetLanguage: Locale) async throws -> String {
         
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return ""
         }
         
-        let session = TranslationSession(installedSource: sourceLanguage, target: targetLanguage)
+        let session = TranslationSession(installedSource: sourceLanguage.language, target: targetLanguage.language)
         
         do {
             let response = try await session.translate(text)

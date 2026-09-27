@@ -22,7 +22,7 @@ enum OCRError: Error {
 }
 
 final class VisionController {
-    func performOCR(on image: NSImage, languages: [String] = ["ko-KR", "en-US", "ja-JP"]) async throws -> [OCRResult] {
+    func performOCR(on image: NSImage, languages: [Locale]) async throws -> [OCRResult] {
         
         guard let cgImage = preprocessImageForOCR(nsImage: image) else {
             throw OCRError.invalidImage
@@ -57,7 +57,7 @@ final class VisionController {
             
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
-            request.recognitionLanguages = languages
+            request.recognitionLanguages = languages.map{ $0.identifier }
             
             
             let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
@@ -85,7 +85,7 @@ final class VisionController {
         // 2. Monotone + Increase contrast
         let controlsFilter = CIFilter(name: "CIColorControls")
         controlsFilter?.setValue(scaledImage, forKey: kCIInputImageKey)
-        controlsFilter?.setValue(1.5, forKey: kCIInputContrastKey)
+        controlsFilter?.setValue(1.1, forKey: kCIInputContrastKey)
         
         guard let outputImage = controlsFilter?.outputImage else { return nil }
         

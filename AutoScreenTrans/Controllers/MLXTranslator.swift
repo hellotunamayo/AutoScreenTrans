@@ -24,7 +24,7 @@ class MLXTranslator: ObservableObject {
     @Published var modelStatus: String = ""
     
     private var modelContainer: ModelContainer?
-    private let modelId = "mlx-community/gemma-4-e2b-it-4bit"
+    private let modelId = "mlx-community/gemma-4-e4b-it-4bit"
 
     private init() {}
     
@@ -108,11 +108,11 @@ class MLXTranslator: ObservableObject {
         let systemPrompt = """
         <start_of_turn>user
         You are a professional video game translator specializing in JRPG localizations. 
-        Your sole task is to translate \(targetLanguage) game dialogue into natural, expressive, spoken-style \(sourceLanguage) Hangul.
+        Your sole task is to translate \(sourceLanguage) game dialogue into natural, expressive, spoken-style \(targetLanguage) Hangul.
         
         [CRITICAL RULES]
-        1. Your output must be 100% written in \(sourceLanguage) (Hangul) ONLY. NEVER include any English/Latin letters, \(targetLanguage) characters, or numbers in the final output.
-        2. Maintain a natural, spoken dialogue style in \(sourceLanguage). Use an informal/casual tone (반말/대사체) unless the original text is explicitly polite.
+        1. Your output must be 100% written in \(targetLanguage) ONLY. NEVER include any English/Latin letters, \(sourceLanguage) characters, or numbers in the final output.
+        2. Maintain a natural, spoken dialogue style in \(targetLanguage). Use an informal/casual tone unless the original text is explicitly polite.
         3. Automatically ignore or remove OCR noise and broken symbols (e.g., "■", "●").
         4. Strictly apply the term dictionary (glossary) provided below:
         \(glossaryText.isEmpty ? "(None)" : glossaryText)

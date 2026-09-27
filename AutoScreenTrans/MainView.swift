@@ -17,7 +17,8 @@ struct MainView: View {
     @State private var selectedWindow: CGWindowID = 0
     @State private var windowInfoList: [WindowInfo] = []
     @State private var capturedWindowImage: NSImage = .init()
-    @State private var sourceLanguage: Locale = Locale(components: .init(languageCode: .english))
+    @State private var sourceLanguage: Locale = Locale(components: .init(languageCode: .japanese))
+    @State private var targetLanguage: Locale = Locale(components: .init(languageCode: .korean))
     @State private var capturedText: String = ""
     @State private var translatedText: String = ""
     @State private var modelTranslatedText: String = ""
@@ -78,8 +79,15 @@ struct MainView: View {
                 
                 Picker(selection: $sourceLanguage, label: Text("Source Language")) {
                     Text("Select Language").tag("")
+                    Text("日本語").tag(Locale(components: .init(languageCode: .japanese)))
                     Text("English").tag(Locale(components: .init(languageCode: .english)))
                     Text("한국어").tag(Locale(components: .init(languageCode: .korean)))
+                }
+                
+                Picker(selection: $targetLanguage, label: Text("Target Language")) {
+                    Text("Select Language").tag("")
+                    Text("한국어").tag(Locale(components: .init(languageCode: .korean)))
+                    Text("English").tag(Locale(components: .init(languageCode: .english)))
                     Text("日本語").tag(Locale(components: .init(languageCode: .japanese)))
                 }
                 
@@ -98,10 +106,10 @@ struct MainView: View {
                         
                         print("Captured Text: \(capturedText)")
                         
-                        let target = Locale(components: .init(languageCode: .korean))
+                        targetLanguage = Locale(components: .init(languageCode: .korean))
                         translatedText = try await translationController.translateText(text: capturedText,
                                                             from: sourceLanguage,
-                                                            to: target)
+                                                            to: targetLanguage)
                         
                         do {
                             statusMessage = "Preparing model..."
@@ -109,8 +117,8 @@ struct MainView: View {
                             
                             statusMessage = "Starting inference..."
                             modelTranslatedText = try await translator.translate(
-                                sourceLanguage: sourceLanguage.description,
-                                targetLanguage: target.description,
+                                sourceLanguage: sourceLanguage.localizedString(forLanguageCode: sourceLanguage.identifier) ?? "English",
+                                targetLanguage: targetLanguage.localizedString(forLanguageCode: targetLanguage.identifier) ?? "Korean",
                                 givenText: capturedText,
                                 glossary: [:]
                             )

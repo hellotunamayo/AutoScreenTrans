@@ -96,44 +96,13 @@ struct MainView: View {
                 
                 Button {
                     Task {
-                        
-                        let capturedImage = try await windowListController.captureWindow(windowID: selectedWindow)
-                        let results = try await visionController.performOCR(on: capturedImage, languages: [sourceLanguage])
-                        capturedText = ""
-                        for result in results {
-                            capturedText.append(result.text)
-                        }
-                        
-                        print("Captured Text: \(capturedText)")
-                        
-                        targetLanguage = Locale(components: .init(languageCode: .korean))
-                        translatedText = try await translationController.translateText(text: capturedText,
-                                                            from: sourceLanguage,
-                                                            to: targetLanguage)
-                        
-                        do {
-                            statusMessage = "Preparing model..."
-                            await translator.prepareModel()
-                            
-                            statusMessage = "Starting inference..."
-                            modelTranslatedText = try await translator.translate(
-                                sourceLanguage: sourceLanguage.localizedString(forLanguageCode: sourceLanguage.identifier) ?? "English",
-                                targetLanguage: targetLanguage.localizedString(forLanguageCode: targetLanguage.identifier) ?? "Korean",
-                                givenText: capturedText,
-                                glossary: [:]
-                            )
-                            
-                            statusMessage = "Job finished."
-                        } catch {
-                            statusMessage = error.localizedDescription
-                            print("Error: \(error)")
-                        }
-                        
+                        try await self.translate()
                     }
                 } label: {
                     Text("Get text & translate from window")
                 }
                 .buttonStyle(BorderedProminentButtonStyle())
+                .keyboardShortcut(.return, modifiers: [.command])
                 
                 Button {
                     Task {
@@ -169,6 +138,40 @@ struct MainView: View {
     private func getLanguageCode(from languageTag: String) -> String {
         let language = Locale.Language(components: .init(identifier: languageTag))
         return language.languageCode?.identifier ?? languageTag
+    }
+    
+    private func translate() async throws {
+        let capturedImage = try await windowListController.captureWindow(windowID: selectedWindow)
+        let results = try await visionController.performOCR(on: capturedImage, languages: [sourceLanguage])
+        capturedText = ""
+        for result in results {
+            capturedText.append(result.text)
+        }
+        
+        print("Captured Text: \(capturedText)")
+        
+        targetLanguage = Locale(components: .init(languageCode: .korean))
+        translatedText = try await translationController.translateText(text: capturedText,
+                                                                       from: sourceLanguage,
+                                                                       to: targetLanguage)
+        
+        do {
+            statusMessage = "Preparing model..."
+            await translator.prepareModel()
+            
+            statusMessage = "Starting inference..."
+            modelTranslatedText = try await translator.translate(
+                sourceLanguage: sourceLanguage.localizedString(forLanguageCode: sourceLanguage.identifier) ?? "English",
+                targetLanguage: targetLanguage.localizedString(forLanguageCode: targetLanguage.identifier) ?? "Korean",
+                givenText: capturedText,
+                glossary: [:]
+            )
+            
+            statusMessage = "Job finished."
+        } catch {
+            statusMessage = error.localizedDescription
+            print("Error: \(error)")
+        }
     }
 }
 

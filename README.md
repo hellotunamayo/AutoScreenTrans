@@ -6,13 +6,13 @@ A lightweight macOS desktop application that captures on-screen text via OCR and
 
 ## Key Features
 - **Screen Capture & OCR**: Select any area on your screen to automatically extract text.
-- **Local AI Translation**: Powered by MLX and Qwen 2.5 3B for fast, accurate, and private on-device translations.
+- **Local AI Translation**: Powered by MLX and `Gemma-4-e4b-it-4bit` for fast, accurate, and private on-device translations.
 
 ---
 
 ## Requirements & Prerequisites
 
-This application runs the **Qwen 2.5 3B Instruct (4-bit)** model locally on Apple Silicon using Apple's MLX framework. Follow the steps below to set up the environment.
+This application runs the **Gemma-4-e4b-it-4bit** model locally on Apple Silicon using Apple's MLX framework. Follow the steps below to set up the environment.
 
 ### 1. Install Homebrew
 
@@ -38,18 +38,13 @@ brew install hf
 
 ## Model Download Instructions
 
-To use local translation, you need to download the quantized model weights from Hugging Face (`mlx-community/Qwen2.5-3B-Instruct-4bit`).
+To use local translation, you need to download the quantized model weights from Hugging Face (`mlx-community/gemma-4-e4b-it-4bit`).
 
 1. Open your **Terminal**.
 2. Run the following command to download the model to your preferred directory (or default Hugging Face cache):
 
 ```bash
-hf download mlx-community/Qwen2.5-3B-Instruct-4bit
-```
-
-**Tip:** If you want to download the model directly into a specific folder inside your project or application data folder, use the `--local-dir` option:
-```bash
-hf download mlx-community/Qwen2.5-3B-Instruct-4bit --local-dir ./models/Qwen2.5-3B-Instruct-4bit
+hf download mlx-community/gemma-4-e4b-it-4bit
 ```
 
 ---

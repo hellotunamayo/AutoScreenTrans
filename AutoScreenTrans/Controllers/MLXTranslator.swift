@@ -24,7 +24,7 @@ class MLXTranslator: ObservableObject {
     @Published var modelStatus: String = ""
     
     private var modelContainer: ModelContainer?
-    private let modelId = "mlx-community/gemma-4-e4b-it-4bit"
+    private let modelId = "mlx-community/gemma-3-12b-it-4bit"
 
     private init() {}
     
@@ -114,7 +114,8 @@ class MLXTranslator: ObservableObject {
         1. Your output must be 100% written in \(targetLanguage) ONLY. NEVER include any English/Latin letters, \(sourceLanguage) characters, or numbers in the final output.
         2. Maintain a natural, spoken dialogue style in \(targetLanguage). Use an informal/casual tone unless the original text is explicitly polite.
         3. Automatically ignore or remove OCR noise and broken symbols (e.g., "■", "●").
-        4. Strictly apply the term dictionary (glossary) provided below:
+        4. Do not output any internal thoughts or reasoning; output ONLY the final result.
+        5. Strictly apply the term dictionary (glossary) provided below:
         \(glossaryText.isEmpty ? "(None)" : glossaryText)
         """
         
@@ -130,7 +131,7 @@ class MLXTranslator: ObservableObject {
         
         // Inference Parameters
         let generateParameters = GenerateParameters(
-            maxTokens: 100, temperature: 0.1
+            maxTokens: 1000, temperature: 0.1
         )
         
         // MLX GPU Inference
